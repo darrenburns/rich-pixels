@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "rich-pixels"
+version = "1.0.0"
+description = "A Rich-compatible library for writing pixels and other colourful grids to the terminal."
+authors = ["Darren Burns <darrenb900@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "rich_pixels" }]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+rich = "^12.0.0"
+# -- 'image' extras --
+pillow = "^9.0.0"
+
+[tool.poetry.extras]
+image = ["Pillow"]
+
+[tool.poetry.group.dev.dependencies]
+ward = "^0.67.0b0"
+black = "^22.10.0"
+mypy = "^0.990"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
