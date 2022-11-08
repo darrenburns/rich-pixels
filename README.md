@@ -3,6 +3,10 @@
 A Rich-compatible library for writing pixel images and other colourful grids to the
 terminal.
 
+<p align="center">
+<img width="700" src="https://user-images.githubusercontent.com/5740731/200676207-8e9c9465-628b-40de-ba0b-410612f2bd7c.svg" />
+</p>
+
 ## Installation
 
 Get `rich-pixels` from PyPI.
