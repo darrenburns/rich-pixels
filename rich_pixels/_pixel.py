@@ -127,7 +127,7 @@ class Pixels:
 if __name__ == '__main__':
     console = Console()
     images_path = Path(__file__).parent / "../.sample_data/images"
-    pixels = Pixels.from_image_path(images_path / "1.png")
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png")
     console.print(pixels)
 
     grid = """\
