@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "rich_pixels" }]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7"
 rich = "^12.0.0"
 pillow = "^9.0.0"
 
@@ -15,6 +15,8 @@ pillow = "^9.0.0"
 black = "^22.10.0"
 mypy = "^0.990"
 syrupy = "^3.0.5"
+importlib-metadata = "^5.0.0"
+types-pillow = "^9.3.0.1"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path, PurePath
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Tuple, Union, Optional, List
 
-from PIL import Image
+from PIL import Image as PILImageModule
+from PIL.Image import Image
 from PIL.Image import Resampling
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.segment import Segment, Segments
@@ -16,15 +17,15 @@ class Pixels:
 
     @staticmethod
     def from_image(
-        image: "Image",
+        image: Image,
     ):
         segments = Pixels._segments_from_image(image)
         return Pixels.from_segments(segments)
 
     @staticmethod
     def from_image_path(
-        path: PurePath | str,
-        resize: tuple[int, int] | None = None,
+        path: Union[PurePath, str],
+        resize: Optional[Tuple[int, int]] = None,
     ) -> Pixels:
         """Create a Pixels object from an image. Requires 'image' extra dependencies.
 
@@ -32,14 +33,14 @@ class Pixels:
             path: The path to the image file.
             resize: A tuple of (width, height) to resize the image to.
         """
-        with Image.open(Path(path)) as image:
+        with PILImageModule.open(Path(path)) as image:
             segments = Pixels._segments_from_image(image, resize)
 
         return Pixels.from_segments(segments)
 
     @staticmethod
     def _segments_from_image(
-        image: "Image", resize: tuple[int, int] | None = None
+        image: Image, resize: Optional[Tuple[int, int]] = None
     ) -> list[Segment]:
         if resize:
             image = image.resize(resize, resample=Resampling.NEAREST)
@@ -52,7 +53,7 @@ class Pixels:
         segments = []
 
         for y in range(height):
-            this_row = []
+            this_row: List[Segment] = []
             row_append = this_row.append
 
             for x in range(width):
@@ -78,7 +79,9 @@ class Pixels:
         return pixels
 
     @staticmethod
-    def from_ascii(grid: str, mapping: Mapping[str, Segment] | None = None) -> Pixels:
+    def from_ascii(
+        grid: str, mapping: Optional[Mapping[str, Segment]] = None
+    ) -> Pixels:
         """
         Create a Pixels object from a 2D-grid of ASCII characters.
         Each ASCII character can be mapped to a Segment (a character and style combo),
@@ -108,7 +111,7 @@ class Pixels:
         yield self._segments or ""
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     console = Console()
     images_path = Path(__file__).parent / "../tests/.sample_data/images"
     pixels = Pixels.from_image_path(images_path / "bulbasaur.png")
