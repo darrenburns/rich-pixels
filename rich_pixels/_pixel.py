@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path, PurePath
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Tuple, Union, Optional
 
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.segment import Segment, Segments
@@ -33,8 +33,8 @@ class Pixels:
 
     @staticmethod
     def from_image_path(
-        path: PurePath | str,
-        resize: tuple[int, int] | None = None,
+        path: Union[PurePath, str],
+        resize: Optional[Tuple[int, int]] = None,
     ) -> Pixels:
         """Create a Pixels object from an image. Requires 'image' extra dependencies.
 
@@ -49,7 +49,7 @@ class Pixels:
 
     @staticmethod
     def _segments_from_image(
-        image: "Image", resize: tuple[int, int] | None = None
+        image: "Image", resize: Optional[Tuple[int, int]] = None
     ) -> list[Segment]:
         if not _PIL_INSTALLED:
             raise PixelsError(
@@ -94,7 +94,9 @@ class Pixels:
         return pixels
 
     @staticmethod
-    def from_ascii(grid: str, mapping: Mapping[str, Segment] | None = None) -> Pixels:
+    def from_ascii(
+        grid: str, mapping: Optional[Mapping[str, Segment]] = None
+    ) -> Pixels:
         """
         Create a Pixels object from a 2D-grid of ASCII characters.
         Each ASCII character can be mapped to a Segment (a character and style combo),
@@ -124,7 +126,7 @@ class Pixels:
         yield self._segments or ""
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     console = Console()
     images_path = Path(__file__).parent / "../.sample_data/images"
     pixels = Pixels.from_image_path(images_path / "bulbasaur.png")
