@@ -20,6 +20,7 @@ black = "^22.10.0"
 mypy = "^0.990"
 syrupy = "^3.0.5"
 importlib-metadata = "^5.0.0"
+types-pillow = "^9.3.0.1"
 
 [build-system]
 requires = ["poetry-core"]

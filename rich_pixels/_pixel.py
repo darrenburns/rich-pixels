@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from pathlib import Path, PurePath
-from typing import Iterable, Mapping, Tuple, Union, Optional
+from typing import Iterable, Mapping, Tuple, Union, Optional, List
 
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.segment import Segment, Segments
 from rich.style import Style
 
 try:
-    from PIL import Image
+    import PIL
+    from PIL.Image import Image
     from PIL.Image import Resampling
 
     _PIL_INSTALLED = True
@@ -26,7 +27,7 @@ class Pixels:
 
     @staticmethod
     def from_image(
-        image: "Image",
+        image: Image,
     ):
         segments = Pixels._segments_from_image(image)
         return Pixels.from_segments(segments)
@@ -42,14 +43,14 @@ class Pixels:
             path: The path to the image file.
             resize: A tuple of (width, height) to resize the image to.
         """
-        with Image.open(Path(path)) as image:
+        with PIL.Image.open(Path(path)) as image:
             segments = Pixels._segments_from_image(image, resize)
 
         return Pixels.from_segments(segments)
 
     @staticmethod
     def _segments_from_image(
-        image: "Image", resize: Optional[Tuple[int, int]] = None
+        image: Image, resize: Optional[Tuple[int, int]] = None
     ) -> list[Segment]:
         if not _PIL_INSTALLED:
             raise PixelsError(
@@ -68,7 +69,7 @@ class Pixels:
         segments = []
 
         for y in range(height):
-            this_row = []
+            this_row: List[Segment] = []
             row_append = this_row.append
 
             for x in range(width):
