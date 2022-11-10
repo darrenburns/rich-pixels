@@ -9,11 +9,7 @@ packages = [{ include = "rich_pixels" }]
 [tool.poetry.dependencies]
 python = "^3.8"
 rich = "^12.0.0"
-# -- 'image' extras --
 pillow = "^9.0.0"
-
-[tool.poetry.extras]
-image = ["Pillow"]
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"

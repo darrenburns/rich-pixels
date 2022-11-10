@@ -1,1 +1,1 @@
-from rich_pixels._pixel import Pixels, PixelsError
+from rich_pixels._pixel import Pixels

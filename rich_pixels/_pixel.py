@@ -3,21 +3,11 @@ from __future__ import annotations
 from pathlib import Path, PurePath
 from typing import Iterable, Mapping
 
+from PIL import Image
+from PIL.Image import Resampling
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.segment import Segment, Segments
 from rich.style import Style
-
-try:
-    from PIL import Image
-    from PIL.Image import Resampling
-
-    _PIL_INSTALLED = True
-except ImportError:
-    _PIL_INSTALLED = False
-
-
-class PixelsError(Exception):
-    pass
 
 
 class Pixels:
@@ -51,12 +41,6 @@ class Pixels:
     def _segments_from_image(
         image: "Image", resize: tuple[int, int] | None = None
     ) -> list[Segment]:
-        if not _PIL_INSTALLED:
-            raise PixelsError(
-                "Methods like from_image and from_image_path require "
-                "the 'image' extra dependencies to be installed."
-            )
-
         if resize:
             image = image.resize(resize, resample=Resampling.NEAREST)
 
@@ -126,7 +110,7 @@ class Pixels:
 
 if __name__ == '__main__':
     console = Console()
-    images_path = Path(__file__).parent / "../.sample_data/images"
+    images_path = Path(__file__).parent / "../tests/.sample_data/images"
     pixels = Pixels.from_image_path(images_path / "bulbasaur.png")
     console.print(pixels)
 
