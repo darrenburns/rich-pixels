@@ -3,15 +3,13 @@ from __future__ import annotations
 from pathlib import Path, PurePath
 from typing import Iterable, Mapping, Tuple, Union, Optional, List
 
-from PIL import Image
+from PIL import Image as PILImageModule
+from PIL.Image import Image
 from PIL.Image import Resampling
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.segment import Segment, Segments
 from rich.style import Style
 
-import PIL
-from PIL.Image import Image
-from PIL.Image import Resampling
 
 class Pixels:
     def __init__(self) -> None:
@@ -35,7 +33,7 @@ class Pixels:
             path: The path to the image file.
             resize: A tuple of (width, height) to resize the image to.
         """
-        with PIL.Image.open(Path(path)) as image:
+        with PILImageModule.open(Path(path)) as image:
             segments = Pixels._segments_from_image(image, resize)
 
         return Pixels.from_segments(segments)
