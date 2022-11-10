@@ -12,17 +12,12 @@ terminal.
 Get `rich-pixels` from PyPI.
 
 ```
-pip install rich-pixels[image]
+pip install rich-pixels
 ```
-
-Be sure to install the `image` extras if you want to display images!
-Most functionality (currently) depends on these extras, so you'll probably need them.
 
 ## Basic Usage
 
 ### Images
-
-Requires the `image` extras to be installed (this will install `Pillow`).
 
 #### Image from a file
 
