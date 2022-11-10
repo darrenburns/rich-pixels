@@ -12,7 +12,7 @@ terminal.
 Get `rich-pixels` from PyPI.
 
 ```
-pip install rich-pixels[image]
+pip install "rich-pixels[image]"
 ```
 
 Be sure to install the `image` extras if you want to display images!
