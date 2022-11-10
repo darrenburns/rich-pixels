@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "rich_pixels" }]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7"
 rich = "^12.0.0"
 # -- 'image' extras --
 pillow = "^9.0.0"
