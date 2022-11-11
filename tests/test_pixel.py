@@ -42,3 +42,12 @@ def test_ascii_text(svg_snapshot):
     console.print(Align.center(pixels))
     svg = console.export_svg(title="pixels in the terminal")
     assert svg == svg_snapshot
+
+
+def test_base64_image(svg_snapshot):
+    console = get_console()
+    base64_img = (SAMPLE_DATA_DIR / "base64/bulbasaur.txt").read_text(encoding="utf-8")
+    pixels = Pixels.from_base64_image(base64_img)
+    console.print(pixels)
+    svg = console.export_svg()
+    assert svg == svg_snapshot
