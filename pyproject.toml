@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rich-pixels"
-version = "2.1.0"
+version = "2.1.1"
 description = "A Rich-compatible library for writing pixel images and ASCII art to the terminal."
 authors = ["Darren Burns <darrenb900@gmail.com>"]
 readme = "README.md"
