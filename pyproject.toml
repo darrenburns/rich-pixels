@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rich-pixels"
-version = "2.0.0"
+version = "2.1.0"
 description = "A Rich-compatible library for writing pixel images and ASCII art to the terminal."
 authors = ["Darren Burns <darrenb900@gmail.com>"]
 readme = "README.md"
@@ -9,7 +9,7 @@ include = ["rich_pixels/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-rich = "^12.0.0"
+rich = ">=12.0.0"
 pillow = "^9.0.0"
 
 [tool.poetry.group.dev.dependencies]
