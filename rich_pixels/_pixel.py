@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+from io import BytesIO
 from pathlib import Path, PurePath
 from typing import Iterable, Mapping, Tuple, Union, Optional, List
 
@@ -102,6 +104,16 @@ class Pixels:
         for character in grid:
             segment = mapping.get(character, Segment(character))
             segments.append(segment)
+
+        return Pixels.from_segments(segments)
+
+    @staticmethod
+    def from_base64_image(
+        base64_image: str,
+        resize: Optional[Tuple[int, int]] = None,
+    ):
+        with PILImageModule.open(BytesIO(base64.b64decode(base64_image))) as image:
+            segments = Pixels._segments_from_image(image, resize)
 
         return Pixels.from_segments(segments)
 
