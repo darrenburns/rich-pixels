@@ -13,15 +13,13 @@ from rich.style import Style
 
 
 class Pixels:
-    DEFAULT_COLOR = "black"
-
     def __init__(self) -> None:
         self._segments: Segments | None = None
 
     @staticmethod
     def _get_color(pixel: Tuple[int, int, int, int], default_color: str = None) -> Style:
         r, g, b, a = pixel
-        return f"rgb({r},{g},{b})" if a > 0 else default_color or Pixels.DEFAULT_COLOR
+        return f"rgb({r},{g},{b})" if a > 0 else default_color
 
     @staticmethod
     def from_image(
@@ -77,14 +75,17 @@ class Pixels:
             Render 2 pixels per character.
             """
             
-            # get upper pixel
-            upper_color = Pixels._get_color(get_pixel((x, y)))
-            # get lower pixel
+            colors = []
+            # get lower pixel, render lower pixel use foreground color, so it must be first
             lower_color = Pixels._get_color(get_pixel((x, y + 1)))
-            # render upper pixel use foreground color, lower pixel use background color
-            style = parse_style(f"{upper_color} on {lower_color}")
-            # use upper halfheight block to render
-            row_append(Segment("▀", style))
+            colors.append(lower_color or "")
+            # get upper pixel, render upper pixel use background color, it is optional
+            upper_color = Pixels._get_color(get_pixel((x, y)))
+            upper_color and colors.append(upper_color or "")
+
+            style = parse_style(" on ".join(colors)) if colors else null_style
+            # use lower halfheight block to render if lower pixel is not transparent
+            row_append(Segment("▄" if lower_color else " ", style))
 
         def render_fullpixels(x: int, y: int) -> None:
             """
