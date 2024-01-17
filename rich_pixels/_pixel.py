@@ -19,9 +19,9 @@ class Pixels:
         self._segments: Segments | None = None
 
     @staticmethod
-    def _get_color(pixel: Tuple[int, int, int, int]) -> Style:
+    def _get_color(pixel: Tuple[int, int, int, int], default_color: str = None) -> Style:
         r, g, b, a = pixel
-        return f"rgb({r},{g},{b})" if a > 0 else Pixels.DEFAULT_COLOR
+        return f"rgb({r},{g},{b})" if a > 0 else default_color or Pixels.DEFAULT_COLOR
 
     @staticmethod
     def from_image(
@@ -91,8 +91,8 @@ class Pixels:
             Render 1 pixel per 2character.
             """
 
-            color = Pixels._get_color(get_pixel((x, y)))
-            style = parse_style(f"on {color}")
+            pixel = get_pixel((x, y))
+            style = parse_style(f"on {Pixels._get_color(pixel)}") if pixel[3] > 0 else null_style
             row_append(Segment("  ", style))
 
         render = render_halfpixels if use_halfpixels else render_fullpixels
