@@ -42,3 +42,14 @@ def test_ascii_text(svg_snapshot):
     console.print(Align.center(pixels))
     svg = console.export_svg(title="pixels in the terminal")
     assert svg == svg_snapshot
+
+
+def test_png_image_path_with_halfpixels(svg_snapshot):
+    console = get_console()
+    pixels = Pixels.from_image_path(
+        SAMPLE_DATA_DIR / "images/bulbasaur.png",
+        use_halfpixels=True,
+    )
+    console.print(pixels)
+    svg = console.export_svg()
+    assert svg == svg_snapshot
