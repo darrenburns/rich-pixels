@@ -25,8 +25,9 @@ class Pixels:
     def from_image(
         image: Image,
         use_halfpixels: bool = False,
+        default_color: str = None,
     ):
-        segments = Pixels._segments_from_image(image, use_halfpixels=use_halfpixels)
+        segments = Pixels._segments_from_image(image, use_halfpixels=use_halfpixels, default_color=default_color)
         return Pixels.from_segments(segments)
 
     @staticmethod
@@ -34,6 +35,7 @@ class Pixels:
         path: Union[PurePath, str],
         resize: Optional[Tuple[int, int]] = None,
         use_halfpixels: bool = False,
+        default_color: str = None,
     ) -> Pixels:
         """Create a Pixels object from an image. Requires 'image' extra dependencies.
 
@@ -41,15 +43,19 @@ class Pixels:
             path: The path to the image file.
             resize: A tuple of (width, height) to resize the image to.
             use_halfpixels: Whether to use halfpixels or not. Defaults to False.
+            default_color: The default color to use for transparent pixels. Defaults to None.
         """
         with PILImageModule.open(Path(path)) as image:
-            segments = Pixels._segments_from_image(image, resize, use_halfpixels)
+            segments = Pixels._segments_from_image(image, resize, use_halfpixels, default_color)
 
         return Pixels.from_segments(segments)
 
     @staticmethod
     def _segments_from_image(
-        image: Image, resize: Optional[Tuple[int, int]] = None, use_halfpixels: bool = False
+        image: Image,
+        resize: Optional[Tuple[int, int]] = None,
+        use_halfpixels: bool = False,
+        default_color: str = None
     ) -> list[Segment]:
         if use_halfpixels:
             # because each row is 2 lines high, so we need to make sure the height is even
@@ -57,8 +63,8 @@ class Pixels:
             if target_height % 2 != 0:
                 target_height += 1
 
-            if not resize and image.size[1] != target_height:
-                resize = (image.size[0], target_height)
+            if image.size[1] != target_height:
+                resize = (resize[0], target_height) if resize else (image.size[0], target_height)
 
         if resize:
             image = image.resize(resize, resample=Resampling.NEAREST)
@@ -67,7 +73,7 @@ class Pixels:
         rgba_image = image.convert("RGBA")
         get_pixel = rgba_image.getpixel
         parse_style = Style.parse
-        null_style = Style.null()
+        null_style = Style.null() if default_color is None else parse_style(f"on {default_color}")
         segments = []
 
         def render_halfpixels(x: int, y: int) -> None:
@@ -77,10 +83,10 @@ class Pixels:
             
             colors = []
             # get lower pixel, render lower pixel use foreground color, so it must be first
-            lower_color = Pixels._get_color(get_pixel((x, y + 1)))
+            lower_color = Pixels._get_color(get_pixel((x, y + 1)), default_color=default_color)
             colors.append(lower_color or "")
             # get upper pixel, render upper pixel use background color, it is optional
-            upper_color = Pixels._get_color(get_pixel((x, y)))
+            upper_color = Pixels._get_color(get_pixel((x, y)), default_color=default_color)
             upper_color and colors.append(upper_color or "")
 
             style = parse_style(" on ".join(colors)) if colors else null_style
@@ -93,14 +99,14 @@ class Pixels:
             """
 
             pixel = get_pixel((x, y))
-            style = parse_style(f"on {Pixels._get_color(pixel)}") if pixel[3] > 0 else null_style
+            style = parse_style(f"on {Pixels._get_color(pixel, default_color=default_color)}") if pixel[3] > 0 else null_style
             row_append(Segment("  ", style))
 
         render = render_halfpixels if use_halfpixels else render_fullpixels
         # step=2 if use halfpixels, because each row is 2 lines high
-        seq = range(0, height, 2) if use_halfpixels else range(height)
+        lines = range(0, height, 2) if use_halfpixels else range(height)
 
-        for y in seq:
+        for y in lines:
             this_row: List[Segment] = []
             row_append = this_row.append
 
@@ -164,8 +170,16 @@ if __name__ == "__main__":
     console.print("\[case.1] print fullpixels")
     console.print(pixels)
 
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png", default_color="black")
+    console.print("\[case.2] print fullpixels with default_color")
+    console.print(pixels)
+
     pixels = Pixels.from_image_path(images_path / "bulbasaur.png", use_halfpixels=True)
-    console.print("\[case.2] print halfpixels")
+    console.print("\[case.3] print halfpixels")
+    console.print(pixels)
+
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png", use_halfpixels=True, default_color="black")
+    console.print("\[case.4] print halfpixels with default_color")
     console.print(pixels)
 
     grid = """\
@@ -182,5 +196,5 @@ if __name__ == "__main__":
         "O": Segment("O", Style.parse("white on blue")),
     }
     pixels = Pixels.from_ascii(grid, mapping)
-    console.print("\[case.3] print ascii")
+    console.print("\[case.5] print ascii")
     console.print(pixels)
