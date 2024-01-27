@@ -1,52 +1,46 @@
 from __future__ import annotations
-import math
 
 from pathlib import Path, PurePath
-from typing import Iterable, Mapping, Tuple, Union, Optional, List
+from typing import Iterable, Mapping, Tuple, Union, Optional
 
 from PIL import Image as PILImageModule
 from PIL.Image import Image
-from PIL.Image import Resampling
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.segment import Segment, Segments
 from rich.style import Style
 
+from rich_pixels._renderer import Renderer, HalfcellRenderer, FullcellRenderer
+
 
 class Pixels:
-    def __init__(self) -> None:
-        self._segments: Segments | None = None
+    _segments: Segments | None
 
-    @staticmethod
-    def _get_color(pixel: Tuple[int, int, int, int], default_color: str = None) -> Style:
-        r, g, b, a = pixel
-        return f"rgb({r},{g},{b})" if a > 0 else default_color
+    def __init__(self) -> None:
+        self._segments = None
 
     @staticmethod
     def from_image(
         image: Image,
-        use_halfpixels: bool = False,
-        default_color: str = None,
+        renderer: Renderer = HalfcellRenderer(),
     ):
-        segments = Pixels._segments_from_image(image, use_halfpixels=use_halfpixels, default_color=default_color)
+        segments = Pixels._segments_from_image(image, renderer=renderer)
         return Pixels.from_segments(segments)
 
     @staticmethod
     def from_image_path(
         path: Union[PurePath, str],
         resize: Optional[Tuple[int, int]] = None,
-        use_halfpixels: bool = False,
-        default_color: str = None,
+        renderer: Renderer = HalfcellRenderer(),
     ) -> Pixels:
         """Create a Pixels object from an image. Requires 'image' extra dependencies.
 
         Args:
             path: The path to the image file.
             resize: A tuple of (width, height) to resize the image to.
-            use_halfpixels: Whether to use halfpixels or not. Defaults to False.
-            default_color: The default color to use for transparent pixels. Defaults to None.
+            renderer: The renderer to use. Defaults to HalfcellRenderer.
         """
         with PILImageModule.open(Path(path)) as image:
-            segments = Pixels._segments_from_image(image, resize, use_halfpixels, default_color)
+            segments = Pixels._segments_from_image(image, resize, renderer=renderer)
 
         return Pixels.from_segments(segments)
 
@@ -54,72 +48,9 @@ class Pixels:
     def _segments_from_image(
         image: Image,
         resize: Optional[Tuple[int, int]] = None,
-        use_halfpixels: bool = False,
-        default_color: str = None
+        renderer: Renderer = HalfcellRenderer(),
     ) -> list[Segment]:
-        if use_halfpixels:
-            # because each row is 2 lines high, so we need to make sure the height is even
-            target_height = resize[1] if resize else image.size[1]
-            if target_height % 2 != 0:
-                target_height += 1
-
-            if image.size[1] != target_height:
-                resize = (resize[0], target_height) if resize else (image.size[0], target_height)
-
-        if resize:
-            image = image.resize(resize, resample=Resampling.NEAREST)
-
-        width, height = image.width, image.height
-        rgba_image = image.convert("RGBA")
-        get_pixel = rgba_image.getpixel
-        parse_style = Style.parse
-        null_style = Style.null() if default_color is None else parse_style(f"on {default_color}")
-        segments = []
-
-        def render_halfpixels(x: int, y: int) -> None:
-            """
-            Render 2 pixels per character.
-            """
-            
-            colors = []
-            # get lower pixel, render lower pixel use foreground color, so it must be first
-            lower_color = Pixels._get_color(get_pixel((x, y + 1)), default_color=default_color)
-            colors.append(lower_color or "")
-            # get upper pixel, render upper pixel use background color, it is optional
-            upper_color = Pixels._get_color(get_pixel((x, y)), default_color=default_color)
-            upper_color and colors.append(upper_color or "")
-
-            style = parse_style(" on ".join(colors)) if colors else null_style
-            # use lower halfheight block to render if lower pixel is not transparent
-            row_append(Segment("▄" if lower_color else " ", style))
-
-        def render_fullpixels(x: int, y: int) -> None:
-            """
-            Render 1 pixel per 2character.
-            """
-
-            pixel = get_pixel((x, y))
-            style = parse_style(f"on {Pixels._get_color(pixel, default_color=default_color)}") if pixel[3] > 0 else null_style
-            row_append(Segment("  ", style))
-
-        render = render_halfpixels if use_halfpixels else render_fullpixels
-        # step=2 if use halfpixels, because each row is 2 lines high
-        lines = range(0, height, 2) if use_halfpixels else range(height)
-
-        for y in lines:
-            this_row: List[Segment] = []
-            row_append = this_row.append
-
-            for x in range(width):
-                render(x, y)
-
-            row_append(Segment("\n", null_style))
-
-            # TODO: Double-check if this is required - I've forgotten...
-            if not all(t[1] == "" for t in this_row[:-1]):
-                segments += this_row
-
-        return segments
+        return renderer.render(image, resize)
 
     @staticmethod
     def from_segments(
@@ -166,20 +97,20 @@ class Pixels:
 if __name__ == "__main__":
     console = Console()
     images_path = Path(__file__).parent / "../tests/.sample_data/images"
-    pixels = Pixels.from_image_path(images_path / "bulbasaur.png")
-    console.print("\[case.1] print fullpixels")
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png", renderer=FullcellRenderer())
+    console.print("\\[case.1] print with fullpixels renderer")
     console.print(pixels)
 
-    pixels = Pixels.from_image_path(images_path / "bulbasaur.png", default_color="black")
-    console.print("\[case.2] print fullpixels with default_color")
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png", renderer=FullcellRenderer(default_color="black"))
+    console.print("\\[case.2] print with fullpixels renderer and default_color")
     console.print(pixels)
 
-    pixels = Pixels.from_image_path(images_path / "bulbasaur.png", use_halfpixels=True)
-    console.print("\[case.3] print halfpixels")
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png", renderer=HalfcellRenderer())
+    console.print("\\[case.3] print with halfpixels renderer")
     console.print(pixels)
 
-    pixels = Pixels.from_image_path(images_path / "bulbasaur.png", use_halfpixels=True, default_color="black")
-    console.print("\[case.4] print halfpixels with default_color")
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png", renderer=HalfcellRenderer(default_color="black"))
+    console.print("\\[case.4] print with halfpixels renderer and default_color")
     console.print(pixels)
 
     grid = """\
@@ -196,5 +127,5 @@ if __name__ == "__main__":
         "O": Segment("O", Style.parse("white on blue")),
     }
     pixels = Pixels.from_ascii(grid, mapping)
-    console.print("\[case.5] print ascii")
+    console.print("\\[case.5] print ascii")
     console.print(pixels)
