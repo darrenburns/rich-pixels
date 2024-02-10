@@ -19,23 +19,35 @@ class Pixels:
     @staticmethod
     def from_image(
         image: Image,
-        renderer: Renderer = HalfcellRenderer(),
+        resize: Optional[Tuple[int, int]] = None,
+        renderer: Renderer | None = None,
     ):
-        segments = Pixels._segments_from_image(image, renderer=renderer)
+        """Create a Pixels object from a PIL Image.
+        Requires 'image' extra dependencies.
+
+        Args:
+            image: The PIL Image
+            resize: A tuple of (width, height) to resize the image to.
+            renderer: The renderer to use. If None, the default half-cell renderer will
+                be used.
+        """
+        segments = Pixels._segments_from_image(image, resize, renderer=renderer)
         return Pixels.from_segments(segments)
 
     @staticmethod
     def from_image_path(
         path: Union[PurePath, str],
         resize: Optional[Tuple[int, int]] = None,
-        renderer: Renderer = HalfcellRenderer(),
+        renderer: Renderer | None = None,
     ) -> Pixels:
-        """Create a Pixels object from an image. Requires 'image' extra dependencies.
+        """Create a Pixels object from an image path.
+        Requires 'image' extra dependencies.
 
         Args:
             path: The path to the image file.
             resize: A tuple of (width, height) to resize the image to.
-            renderer: The renderer to use. Defaults to HalfcellRenderer.
+            renderer: The renderer to use. If None, the default half-cell renderer will
+                be used.
         """
         with PILImageModule.open(Path(path)) as image:
             segments = Pixels._segments_from_image(image, resize, renderer=renderer)
@@ -46,8 +58,10 @@ class Pixels:
     def _segments_from_image(
         image: Image,
         resize: Optional[Tuple[int, int]] = None,
-        renderer: Renderer = HalfcellRenderer(),
+        renderer: Renderer | None = None,
     ) -> list[Segment]:
+        if renderer is None:
+            renderer = HalfcellRenderer()
         return renderer.render(image, resize)
 
     @staticmethod

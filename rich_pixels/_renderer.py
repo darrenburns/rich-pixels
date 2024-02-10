@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from typing import Callable, Tuple
+
+from PIL.Image import Image, Resampling
 from rich.segment import Segment
 from rich.style import Style
-from PIL.Image import Image, Resampling
 
 RGBA = Tuple[int, int, int, int]
 GetPixel = Callable[[Tuple[int, int]], RGBA]
@@ -32,7 +33,7 @@ class Renderer:
             None if default_color is None else Style.parse(f"on {default_color}")
         )
 
-    def render(self, image: Image, resize: Tuple[int, int] | None) -> list[Segment]:
+    def render(self, image: Image, resize: tuple[int, int] | None) -> list[Segment]:
         """
         Render an image to Segments.
         """
@@ -80,7 +81,7 @@ class HalfcellRenderer(Renderer):
     Render an image to half-height cells.
     """
 
-    def render(self, image: Image, resize: Tuple[int, int] | None) -> list[Segment]:
+    def render(self, image: Image, resize: tuple[int, int] | None) -> list[Segment]:
         # because each row is 2 lines high, so we need to make sure the height is even
         target_height = resize[1] if resize else image.size[1]
         if target_height % 2 != 0:
