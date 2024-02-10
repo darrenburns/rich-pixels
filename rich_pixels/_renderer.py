@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 from typing import Callable, Tuple
 from rich.segment import Segment
 from rich.style import Style
 from PIL.Image import Image, Resampling
 
 RGBA = Tuple[int, int, int, int]
-GetPixel = Callable[[tuple[int, int]], RGBA]
+GetPixel = Callable[[Tuple[int, int]], RGBA]
+
 
 def _get_color(pixel: RGBA, default_color: str | None = None) -> str | None:
     r, g, b, a = pixel
@@ -25,7 +28,8 @@ class Renderer:
         default_color: str | None = None,
     ) -> None:
         self.default_color = default_color
-        self.null_style = None if default_color is None else Style.parse(f"on {default_color}")
+        self.null_style = None if default_color is None else Style.parse(
+            f"on {default_color}")
 
     def render(self, image: Image, resize: Tuple[int, int] | None) -> list[Segment]:
         """
@@ -44,7 +48,8 @@ class Renderer:
         for y in self._get_range(height):
             this_row: list[Segment] = []
 
-            this_row += self._render_line(line_index=y, width=width, get_pixel=get_pixel)
+            this_row += self._render_line(line_index=y, width=width,
+                                          get_pixel=get_pixel)
             this_row.append(Segment("\n", self.null_style))
 
             # TODO: Double-check if this is required - I've forgotten...
@@ -52,13 +57,13 @@ class Renderer:
                 segments += this_row
 
         return segments
-    
+
     def _get_range(self, height: int) -> range:
         """
         Get the range of lines to render.
         """
         raise NotImplementedError
-    
+
     def _render_line(
         self,
         *,
@@ -84,7 +89,8 @@ class HalfcellRenderer(Renderer):
             target_height += 1
 
         if image.size[1] != target_height:
-            resize = (resize[0], target_height) if resize else (image.size[0], target_height)
+            resize = (resize[0], target_height) if resize else (
+            image.size[0], target_height)
 
         return super().render(image, resize)
 
@@ -113,7 +119,8 @@ class HalfcellRenderer(Renderer):
         colors = []
 
         # get lower pixel, render lower pixel use foreground color, so it must be first
-        lower_color = _get_color(get_pixel((x, y + 1)), default_color=self.default_color)
+        lower_color = _get_color(get_pixel((x, y + 1)),
+                                 default_color=self.default_color)
         colors.append(lower_color or "")
         # get upper pixel, render upper pixel use background color, it is optional
         upper_color = _get_color(get_pixel((x, y)), default_color=self.default_color)
@@ -152,6 +159,7 @@ class FullcellRenderer(Renderer):
         get_pixel: GetPixel
     ) -> Segment:
         pixel = get_pixel((x, y))
-        style = Style.parse(f"on {_get_color(pixel, default_color=self.default_color)}") if pixel[3] > 0 else self.null_style
+        style = Style.parse(
+            f"on {_get_color(pixel, default_color=self.default_color)}") if pixel[
+                                                                                3] > 0 else self.null_style
         return Segment("  ", style)
-
