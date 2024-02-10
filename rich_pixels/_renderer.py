@@ -28,8 +28,9 @@ class Renderer:
         default_color: str | None = None,
     ) -> None:
         self.default_color = default_color
-        self.null_style = None if default_color is None else Style.parse(
-            f"on {default_color}")
+        self.null_style = (
+            None if default_color is None else Style.parse(f"on {default_color}")
+        )
 
     def render(self, image: Image, resize: Tuple[int, int] | None) -> list[Segment]:
         """
@@ -48,8 +49,9 @@ class Renderer:
         for y in self._get_range(height):
             this_row: list[Segment] = []
 
-            this_row += self._render_line(line_index=y, width=width,
-                                          get_pixel=get_pixel)
+            this_row += self._render_line(
+                line_index=y, width=width, get_pixel=get_pixel
+            )
             this_row.append(Segment("\n", self.null_style))
 
             # TODO: Double-check if this is required - I've forgotten...
@@ -65,11 +67,7 @@ class Renderer:
         raise NotImplementedError
 
     def _render_line(
-        self,
-        *,
-        line_index: int,
-        width: int,
-        get_pixel: GetPixel
+        self, *, line_index: int, width: int, get_pixel: GetPixel
     ) -> list[Segment]:
         """
         Render a line of pixels.
@@ -89,8 +87,9 @@ class HalfcellRenderer(Renderer):
             target_height += 1
 
         if image.size[1] != target_height:
-            resize = (resize[0], target_height) if resize else (
-            image.size[0], target_height)
+            resize = (
+                (resize[0], target_height) if resize else (image.size[0], target_height)
+            )
 
         return super().render(image, resize)
 
@@ -98,33 +97,25 @@ class HalfcellRenderer(Renderer):
         return range(0, height, 2)
 
     def _render_line(
-        self,
-        *,
-        line_index: int,
-        width: int,
-        get_pixel: GetPixel
+        self, *, line_index: int, width: int, get_pixel: GetPixel
     ) -> list[Segment]:
         line = []
         for x in range(width):
             line.append(self._render_halfcell(x=x, y=line_index, get_pixel=get_pixel))
         return line
 
-    def _render_halfcell(
-        self,
-        *,
-        x: int,
-        y: int,
-        get_pixel: GetPixel
-    ) -> Segment:
+    def _render_halfcell(self, *, x: int, y: int, get_pixel: GetPixel) -> Segment:
         colors = []
 
         # get lower pixel, render lower pixel use foreground color, so it must be first
-        lower_color = _get_color(get_pixel((x, y + 1)),
-                                 default_color=self.default_color)
+        lower_color = _get_color(
+            get_pixel((x, y + 1)), default_color=self.default_color
+        )
         colors.append(lower_color or "")
         # get upper pixel, render upper pixel use background color, it is optional
         upper_color = _get_color(get_pixel((x, y)), default_color=self.default_color)
-        if upper_color: colors.append(upper_color or "")
+        if upper_color:
+            colors.append(upper_color or "")
 
         style = Style.parse(" on ".join(colors)) if colors else self.null_style
         # use lower halfheight block to render if lower pixel is not transparent
@@ -140,26 +131,18 @@ class FullcellRenderer(Renderer):
         return range(height)
 
     def _render_line(
-        self,
-        *,
-        line_index: int,
-        width: int,
-        get_pixel: GetPixel
+        self, *, line_index: int, width: int, get_pixel: GetPixel
     ) -> list[Segment]:
         line = []
         for x in range(width):
             line.append(self._render_fullcell(x=x, y=line_index, get_pixel=get_pixel))
         return line
 
-    def _render_fullcell(
-        self,
-        *,
-        x: int,
-        y: int,
-        get_pixel: GetPixel
-    ) -> Segment:
+    def _render_fullcell(self, *, x: int, y: int, get_pixel: GetPixel) -> Segment:
         pixel = get_pixel((x, y))
-        style = Style.parse(
-            f"on {_get_color(pixel, default_color=self.default_color)}") if pixel[
-                                                                                3] > 0 else self.null_style
+        style = (
+            Style.parse(f"on {_get_color(pixel, default_color=self.default_color)}")
+            if pixel[3] > 0
+            else self.null_style
+        )
         return Segment("  ", style)

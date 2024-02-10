@@ -24,7 +24,9 @@ def get_console():
 
 def test_png_image_path(svg_snapshot):
     console = get_console()
-    pixels = Pixels.from_image_path(SAMPLE_DATA_DIR / "images/bulbasaur.png", renderer=FullcellRenderer())
+    pixels = Pixels.from_image_path(
+        SAMPLE_DATA_DIR / "images/bulbasaur.png", renderer=FullcellRenderer()
+    )
     console.print(pixels)
     svg = console.export_svg()
     assert svg == svg_snapshot
@@ -33,8 +35,10 @@ def test_png_image_path(svg_snapshot):
 def test_ascii_text(svg_snapshot):
     console = get_console()
     ascii = (SAMPLE_DATA_DIR / "ascii/rich_pixels.txt").read_text(encoding="utf-8")
-    mapping = {"#": Segment(" ", Style.parse("on #50b332")),
-               "=": Segment(" ", Style.parse("on #10ada3"))}
+    mapping = {
+        "#": Segment(" ", Style.parse("on #50b332")),
+        "=": Segment(" ", Style.parse("on #10ada3")),
+    }
     pixels = Pixels.from_ascii(
         ascii,
         mapping=mapping,

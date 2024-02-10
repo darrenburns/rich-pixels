@@ -13,7 +13,6 @@ from rich_pixels._renderer import Renderer, HalfcellRenderer, FullcellRenderer
 
 
 class Pixels:
-
     def __init__(self) -> None:
         self._segments: Segments | None = None
 
@@ -96,23 +95,27 @@ class Pixels:
 if __name__ == "__main__":
     console = Console()
     images_path = Path(__file__).parent / "../tests/.sample_data/images"
-    pixels = Pixels.from_image_path(images_path / "bulbasaur.png",
-                                    renderer=FullcellRenderer())
+    pixels = Pixels.from_image_path(
+        images_path / "bulbasaur.png", renderer=FullcellRenderer()
+    )
     console.print("\\[case.1] print with fullpixels renderer")
     console.print(pixels)
 
-    pixels = Pixels.from_image_path(images_path / "bulbasaur.png",
-                                    renderer=FullcellRenderer(default_color="black"))
+    pixels = Pixels.from_image_path(
+        images_path / "bulbasaur.png", renderer=FullcellRenderer(default_color="black")
+    )
     console.print("\\[case.2] print with fullpixels renderer and default_color")
     console.print(pixels)
 
-    pixels = Pixels.from_image_path(images_path / "bulbasaur.png",
-                                    renderer=HalfcellRenderer())
+    pixels = Pixels.from_image_path(
+        images_path / "bulbasaur.png", renderer=HalfcellRenderer()
+    )
     console.print("\\[case.3] print with halfpixels renderer")
     console.print(pixels)
 
-    pixels = Pixels.from_image_path(images_path / "bulbasaur.png",
-                                    renderer=HalfcellRenderer(default_color="black"))
+    pixels = Pixels.from_image_path(
+        images_path / "bulbasaur.png", renderer=HalfcellRenderer(default_color="black")
+    )
     console.print("\\[case.4] print with halfpixels renderer and default_color")
     console.print(pixels)
 
