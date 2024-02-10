@@ -1,73 +1,55 @@
 from __future__ import annotations
 
 from pathlib import Path, PurePath
-from typing import Iterable, Mapping, Tuple, Union, Optional, List
+from typing import Iterable, Mapping, Tuple, Union, Optional
 
 from PIL import Image as PILImageModule
 from PIL.Image import Image
-from PIL.Image import Resampling
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.segment import Segment, Segments
 from rich.style import Style
 
+from rich_pixels._renderer import Renderer, HalfcellRenderer, FullcellRenderer
+
 
 class Pixels:
+
     def __init__(self) -> None:
         self._segments: Segments | None = None
 
     @staticmethod
     def from_image(
         image: Image,
+        renderer: Renderer = HalfcellRenderer(),
     ):
-        segments = Pixels._segments_from_image(image)
+        segments = Pixels._segments_from_image(image, renderer=renderer)
         return Pixels.from_segments(segments)
 
     @staticmethod
     def from_image_path(
         path: Union[PurePath, str],
         resize: Optional[Tuple[int, int]] = None,
+        renderer: Renderer = HalfcellRenderer(),
     ) -> Pixels:
         """Create a Pixels object from an image. Requires 'image' extra dependencies.
 
         Args:
             path: The path to the image file.
             resize: A tuple of (width, height) to resize the image to.
+            renderer: The renderer to use. Defaults to HalfcellRenderer.
         """
         with PILImageModule.open(Path(path)) as image:
-            segments = Pixels._segments_from_image(image, resize)
+            segments = Pixels._segments_from_image(image, resize, renderer=renderer)
 
         return Pixels.from_segments(segments)
 
     @staticmethod
     def _segments_from_image(
-        image: Image, resize: Optional[Tuple[int, int]] = None
+        image: Image,
+        resize: Optional[Tuple[int, int]] = None,
+        renderer: Renderer = HalfcellRenderer(),
     ) -> list[Segment]:
-        if resize:
-            image = image.resize(resize, resample=Resampling.NEAREST)
-
-        width, height = image.width, image.height
-        rgba_image = image.convert("RGBA")
-        get_pixel = rgba_image.getpixel
-        parse_style = Style.parse
-        null_style = Style.null()
-        segments = []
-
-        for y in range(height):
-            this_row: List[Segment] = []
-            row_append = this_row.append
-
-            for x in range(width):
-                r, g, b, a = get_pixel((x, y))
-                style = parse_style(f"on rgb({r},{g},{b})") if a > 0 else null_style
-                row_append(Segment("  ", style))
-
-            row_append(Segment("\n", null_style))
-
-            # TODO: Double-check if this is required - I've forgotten...
-            if not all(t[1] == "" for t in this_row[:-1]):
-                segments += this_row
-
-        return segments
+        return renderer.render(image, resize)
 
     @staticmethod
     def from_segments(
@@ -114,7 +96,24 @@ class Pixels:
 if __name__ == "__main__":
     console = Console()
     images_path = Path(__file__).parent / "../tests/.sample_data/images"
-    pixels = Pixels.from_image_path(images_path / "bulbasaur.png")
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png",
+                                    renderer=FullcellRenderer())
+    console.print("\\[case.1] print with fullpixels renderer")
+    console.print(pixels)
+
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png",
+                                    renderer=FullcellRenderer(default_color="black"))
+    console.print("\\[case.2] print with fullpixels renderer and default_color")
+    console.print(pixels)
+
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png",
+                                    renderer=HalfcellRenderer())
+    console.print("\\[case.3] print with halfpixels renderer")
+    console.print(pixels)
+
+    pixels = Pixels.from_image_path(images_path / "bulbasaur.png",
+                                    renderer=HalfcellRenderer(default_color="black"))
+    console.print("\\[case.4] print with halfpixels renderer and default_color")
     console.print(pixels)
 
     grid = """\
@@ -131,4 +130,5 @@ if __name__ == "__main__":
         "O": Segment("O", Style.parse("white on blue")),
     }
     pixels = Pixels.from_ascii(grid, mapping)
+    console.print("\\[case.5] print ascii")
     console.print(pixels)
