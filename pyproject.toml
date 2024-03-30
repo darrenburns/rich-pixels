@@ -1,6 +1,6 @@
 [project]
 name = "rich-pixels"
-version = "3.0.0"
+version = "3.0.1"
 description = "A Rich-compatible library for writing pixel images and ASCII art to the terminal."
 authors = [
     { name = "Darren Burns", email = "darrenb900@gmail.com" }
