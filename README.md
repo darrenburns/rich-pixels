@@ -59,6 +59,8 @@ apply styles the ASCII characters. This provides a quick way of sketching out sh
 ```python
 from rich_pixels import Pixels
 from rich.console import Console
+from rich.segment import Segment
+from rich.style import Style
 
 console = Console()
 
